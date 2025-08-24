@@ -168,8 +168,10 @@ fn readN(input: []const u8, start: *usize, n: usize) ![]const u8 {
 fn readUntil(input: []const u8, start: *usize, until: []const u8) ![]const u8 {
     const match = input[start.*..];
     var it = mem.tokenizeSequence(u8, match, until);
-    try assert(it.peek() != null);
-    return it.next().?;
+    const first = it.next();
+    try assert(first != null);
+    start.* += first.?.len;
+    return first.?;
 }
 
 inline fn assert(cond: bool) !void {
