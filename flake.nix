@@ -1,21 +1,26 @@
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    flakelight = {
-      url = "github:nix-community/flakelight";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    flakelight-zig = {
-      url = "github:accelbread/flakelight-zig";
-      inputs.flakelight.follows = "flakelight";
-    };
-    zig-overlay = {
-      url = "github:mitchellh/zig-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    flakelight.url = "github:nix-community/flakelight";
+    flakelight-zig.url = "github:accelbread/flakelight-zig";
+    zig.url = "github:silversquirl/zig-flake/compat";
+    zls.url = "github:zigtools/zls";
+
+    flakelight.inputs.nixpkgs.follows = "nixpkgs";
+    flakelight-zig.inputs.flakelight.follows = "flakelight";
+    zig.inputs.nixpkgs.follows = "nixpkgs";
+    zls.inputs.nixpkgs.follows = "nixpkgs";
+    zls.inputs.zig-overlay.follows = "zig";
   };
 
-  outputs = { flakelight, flakelight-zig, zig-overlay, ... }@inputs:
+  outputs =
+    {
+      flakelight,
+      flakelight-zig,
+      zig,
+      zls,
+      ...
+    }@inputs:
     flakelight ./. {
       inherit inputs;
 
@@ -23,13 +28,20 @@
         flakelight-zig.flakelightModules.default
       ];
 
-      withOverlays = [
-        zig-overlay.overlays.default
-      ];
+      zigToolchain =
+        pkgs:
+        let
+          zigPkgs = zig.packages.${pkgs.system};
+          zlsPkgs = zls.packages.${pkgs.system};
+        in
+        {
+          zig = zigPkgs.default;
+          zls = zlsPkgs.zls;
+        };
 
-      zigToolchain = pkgs: {
-        inherit (pkgs) zls;
-        zig = pkgs.zigpkgs."0.14.1";
-      };
+      devShell.packages =
+        pkgs: with pkgs; [
+          just
+        ];
     };
 }

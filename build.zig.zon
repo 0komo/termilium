@@ -6,12 +6,7 @@
 
     .minimum_zig_version = "0.14.1",
 
-    .dependencies = .{
-        .mecha = .{
-            .url = "git+https://github.com/Hejsil/mecha?ref=0.10.0#25c4e59a2d4b2dfa26aa1b055e2658b9522fc08f",
-            .hash = "mecha-0.10.0-dVGaSJ5aAQAUbK6I2T6_IbQg2AhAfG7f7wnraltqvJpP",
-        },
-    },
+    .dependencies = .{},
 
     .paths = .{
         "build.zig",

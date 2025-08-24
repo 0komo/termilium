@@ -1,6 +1,9 @@
 const std = @import("std");
 
-pub fn build(b: *std.Build) void {
+const builtin = std.builtin;
+const Build = std.Build;
+
+pub fn build(b: *Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
@@ -10,14 +13,9 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    {
-        const mecha = b.dependency("mecha", .{});
-        module.addImport("mecha", mecha.module("mecha"));
-    }
-
     const test_step = b.step("test", "Run unit tests");
     const module_run_tests = b.addRunArtifact(b.addTest(.{
-        .root_module = module,
+        .root_module = path(b, target, optimize, "./src/parser.zig"),
     }));
     test_step.dependOn(&module_run_tests.step);
 
@@ -26,4 +24,12 @@ pub fn build(b: *std.Build) void {
         .root_module = module,
     });
     check_step.dependOn(&test_check.step);
+}
+
+fn path(b: *Build, target: Build.ResolvedTarget, optimize: builtin.OptimizeMode, p: []const u8) *Build.Module {
+    return b.createModule(.{
+        .root_source_file = b.path(p),
+        .target = target,
+        .optimize = optimize,
+    });
 }
