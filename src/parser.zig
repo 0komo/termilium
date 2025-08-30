@@ -154,6 +154,14 @@ pub fn parse(allocator: mem.Allocator, input: []const u8) Error!Database {
         const ext_bools = blk: {
             var map = std.StringHashMap(bool).init(allocator);
             start = 0;
+            for (0..bool_count - 1) |i| {
+                const num = try readI8(booleans, &start);
+                map.put(ext_names[i], switch (num) {
+                    -1, 0 => false,
+                    else => true,
+                });
+            }
+            break :blk map;
         };
     }
 
@@ -216,15 +224,6 @@ fn readUntil(input: []const u8, start: *usize, until: []const u8) ![]const u8 {
     try assert(first != null);
     start.* += first.?.len;
     return first.?;
-}
-
-fn find(comptime T: type, haystack: []const T, needle: T) error{NotFound}!T {
-    for (0..haystack.len - 1) |i| {
-        const v = haystack[i];
-        if (v == needle)
-            return v;
-    }
-    return error.NotFound;
 }
 
 inline fn assert(cond: bool) !void {
